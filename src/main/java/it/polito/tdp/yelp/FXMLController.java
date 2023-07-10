@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.jgrapht.graph.DefaultDirectedWeightedGraph;
+import org.jgrapht.graph.DefaultWeightedEdge;
+
 import it.polito.tdp.yelp.model.Business;
 import it.polito.tdp.yelp.model.Model;
 import it.polito.tdp.yelp.model.Review;
@@ -49,17 +52,38 @@ public class FXMLController {
     	String citta = this.cmbCitta.getValue();
     	if(citta != null) {
     		//TODO popolare la tendina dei locali per la città selezionata
-    		
+    		cmbLocale.getItems().addAll(model.getAllBusiness(citta));
     	}
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	
+    	if (cmbCitta.getValue() == null) {
+    		txtResult.setText("Scegli una città");
+    		return;
+    	}
+    	
+    	if (cmbLocale.getValue() == null) {
+    		txtResult.setText("Scegli un locale");
+    		return;
+    	}
+    	
+    	DefaultDirectedWeightedGraph<Review,DefaultWeightedEdge> graph = model.creaGrafo(cmbLocale.getValue());
+    	
+    	txtResult.setText("Grafo creato con " + graph.vertexSet().size() + " vertici e " + graph.edgeSet().size() + " archi.\n\n");
+    	
+    	for (Review r : model.getReviewMax())
+    		txtResult.appendText(r.toString() + "       # ARCHI USCENTI: " + model.getMaxUscenti() + '\n');
     }
 
     @FXML
     void doTrovaMiglioramento(ActionEvent event) {
+    	
+    	txtResult.setText("TROVATA SEQUENZA: " + model.getDays(model.getSequenza()) + '\n');
+    	
+    	for (Review r : model.getSequenza())
+    		txtResult.appendText(r.toString() + '\n');
     	
     }
 
@@ -75,5 +99,7 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	
+    	cmbCitta.getItems().addAll(model.getAllCities());
     }
 }
